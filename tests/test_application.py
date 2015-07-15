@@ -12,6 +12,7 @@ import yaml
 from hacheck import main
 from hacheck import spool
 from hacheck import cache
+from hacheck import config
 from hacheck import handlers
 
 
@@ -80,6 +81,14 @@ class ApplicationTestCase(tornado.testing.AsyncHTTPTestCase):
             response = self.fetch('/spool/foo/1/status')
             self.assertEqual(response.code, 503)
             self.assertEqual(response.body, b'Service any in down state: just because')
+        with mock.patch.object(
+            spool,
+            'is_up',
+            return_value=(False, {"service": "any", "reason": "reason", "expiration": 5, "creation": 4})
+        ):
+            response = self.fetch('/spool/foo/1/status')
+            self.assertEqual(response.code, 503)
+            self.assertRegexpMatches(response.body, b'^Service any in down state since 4\.0+ until 5\.0+: reason$')
 
     def test_calls_all_checkers(self):
         rv1 = tornado.concurrent.Future()
@@ -144,6 +153,28 @@ class ApplicationTestCase(tornado.testing.AsyncHTTPTestCase):
             response = self.fetch('/http/uncached-weird-code/80/status')
             self.assertEqual(503, response.code)
 
+    def test_haproxy_server_state(self):
+        rv = tornado.concurrent.Future()
+        rv.set_result((200, b'OK'))
+        checker = mock.Mock(return_value=rv)
+        server_state = 'UP 2/3; addr=srv1; port=1234; name=bck/srv2; node=lb1; weight=1/2; scur=13/22; qcur=0'
+        with mock.patch.object(handlers.HTTPServiceHandler, 'CHECKERS', [checker]):
+            response = self.fetch('/http/foo/1/status', headers={'X-Haproxy-Server-State': server_state})
+            self.assertEqual(200, response.code)
+            args, _ = checker.call_args
+            assert args[1] == 1234
+
+    def test_old_haproxy_server_state_ignored(self):
+        rv = tornado.concurrent.Future()
+        rv.set_result((200, b'OK'))
+        checker = mock.Mock(return_value=rv)
+        server_state = 'UP 2/3; name=bck/srv2; node=lb1; weight=1/2; scur=13/22; qcur=0'
+        with mock.patch.object(handlers.HTTPServiceHandler, 'CHECKERS', [checker]):
+            response = self.fetch('/http/foo/1/status', headers={'X-Haproxy-Server-State': server_state})
+            self.assertEqual(200, response.code)
+            args, _ = checker.call_args
+            assert args[1] == 1
+
     def test_option_parsing(self):
         with nested(
             mock.patch('sys.argv', ['ignorethis', '-c', self.config_file.name, '--spool-root', 'foo']),
@@ -176,3 +207,29 @@ class ApplicationTestCase(tornado.testing.AsyncHTTPTestCase):
                 'seen_services': [['foo', {'code': 200, 'ts': mock.ANY, 'remote_ip': '127.0.0.1'}]],
                 'threshold_seconds': 20
             })
+
+    def test_remote_spool_check_forbidden(self):
+        with mock.patch.dict(config.config, {'allow_remote_spool_changes': False}):
+            response = self.fetch('/spool/foo/1/status', method='POST', body="")
+            self.assertEqual(response.code, 403)
+
+    def test_spool_post(self):
+        with nested(
+            mock.patch.dict(config.config, {'allow_remote_spool_changes': True}),
+            mock.patch.object(spool, 'up'),
+            mock.patch.object(spool, 'down'),
+                ) as (_1, spool_up, spool_down):
+
+            response = self.fetch('/spool/foo/0/status', method='POST', body="status=up")
+            self.assertEqual(response.code, 200)
+            spool_up.assert_called_once_with('foo', port=None)
+
+            response = self.fetch('/spool/foo/1234/status', method='POST', body="status=down&reason=because")
+            self.assertEqual(response.code, 200)
+            spool_down.assert_called_once_with('foo', reason='because', port=1234, expiration=None, creation=None)
+
+            spool_down.reset_mock()
+            response = self.fetch('/spool/foo/1234/status', method='POST',
+                                  body="status=down&reason=because&expiration=1&creation=2")
+            self.assertEqual(response.code, 200)
+            spool_down.assert_called_once_with('foo', reason='because', port=1234, expiration=1, creation=2)

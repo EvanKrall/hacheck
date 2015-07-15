@@ -16,8 +16,6 @@ from . import __version__
 
 TIMEOUT = 10
 
-HTTP_HEADERS_TO_COPY = ('Host',)
-
 
 class Timeout(Exception):
     pass
@@ -66,9 +64,13 @@ def add_timeout_to_connect(stream, args=tuple(), kwargs=dict(), timeout_secs=TIM
 # Do not cache spool checks
 @tornado.concurrent.return_future
 def check_spool(service_name, port, query, io_loop, callback, query_params, headers):
-    up, extra_info = spool.is_up(service_name)
+    up, extra_info = spool.is_up(service_name, port=port)
     if not up:
         info_string = 'Service %s in down state' % (extra_info['service'],)
+        if extra_info.get('creation', ''):
+            info_string += ' since %f' % extra_info['creation']
+        if extra_info.get('expiration', ''):
+            info_string += ' until %f' % extra_info['expiration']
         if extra_info.get('reason', ''):
             info_string += ": %s" % extra_info['reason']
         callback((503, info_string))
@@ -84,7 +86,7 @@ def check_http(service_name, port, check_path, io_loop, query_params, headers):
     if not check_path.startswith("/"):
         check_path = "/" + check_path  # pragma: no cover
     headers_out = {'User-Agent': 'hastate %s' % (__version__)}
-    for header in HTTP_HEADERS_TO_COPY:
+    for header in config.config['http_headers_to_copy']:
         if header in headers:
             headers_out[header] = headers[header]
     if config.config['service_name_header']:
