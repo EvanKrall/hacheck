@@ -14,7 +14,9 @@ DEFAULTS = {
     'log_path': (str, 'stderr'),
     'mysql_username': (str, None),
     'mysql_password': (str, None),
-    'rlimit_nofile': (max_or_int, None)
+    'rlimit_nofile': (max_or_int, None),
+    'allow_remote_spool_changes': (bool, False),
+    'http_headers_to_copy': (list, ['Host'])
 }
 
 
