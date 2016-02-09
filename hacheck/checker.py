@@ -63,6 +63,9 @@ def check_http(service_name, port, check_path, io_loop, query_params, headers):
     except Exception as e:
         code = 599
         reason = 'Unhandled exception %s' % e
+
+    # Some necessary house-keeping
+    del http_client
     raise tornado.gen.Return((code, reason))
 
 
@@ -94,6 +97,8 @@ def check_tcp(service_name, port, query, io_loop, query_params, headers):
     finally:
         if stream:
             stream.close()
+        # Some necessary house-keeping
+        del stream
     raise tornado.gen.Return((
         200,
         'Connected in %.2fs' % (time.time() - connect_start)
