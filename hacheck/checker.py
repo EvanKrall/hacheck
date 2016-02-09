@@ -19,50 +19,6 @@ TIMEOUT = 10
 HTTP_HEADERS_TO_COPY = ('Host',)
 
 
-class Timeout(Exception):
-    pass
-
-
-def add_timeout_to_connect(stream, args=tuple(), kwargs=dict(), timeout_secs=TIMEOUT, io_loop=None):
-    # In tornado 4.0, this is really easy
-    # (tornado.gen.with_timeout(gen.Task(func, args)) (where func is the connect method on a stream).
-    #
-    # But we want to support 3.x and we don't get anything useful there, so
-    # we're hacking it ourselves.
-    future = tornado.concurrent.Future()
-
-    def callback(*args, **kwargs):
-        if args:
-            result = args[0]
-        else:
-            result = None
-        future.set_result(result)
-
-    def close_callback():
-        if stream.error:
-            future.set_exception(stream.error)
-
-    kwargs['callback'] = callback
-    stream.set_close_callback(close_callback)
-    stream.connect(*args, **kwargs)
-    if stream.closed() and stream.error:
-        raise stream.error
-
-    def timed_out(*args, **kwargs):
-        future.set_exception(Timeout('Timed out after %ds' % timeout_secs))
-
-    if io_loop is None:
-        io_loop = tornado.ioloop.IOLoop.current()
-    timeout = io_loop.add_timeout(
-        datetime.timedelta(seconds=timeout_secs),
-        timed_out
-    )
-    io_loop.add_future(
-        future, lambda f: io_loop.remove_timeout(timeout)
-    )
-    return future
-
-
 # Do not cache spool checks
 @tornado.concurrent.return_future
 def check_spool(service_name, port, query, io_loop, callback, query_params, headers):
@@ -107,6 +63,9 @@ def check_http(service_name, port, check_path, io_loop, query_params, headers):
     except Exception as e:
         code = 599
         reason = 'Unhandled exception %s' % e
+
+    # Some necessary house-keeping
+    del http_client
     raise tornado.gen.Return((code, reason))
 
 
@@ -119,12 +78,13 @@ def check_tcp(service_name, port, query, io_loop, query_params, headers):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
     try:
         stream = tornado.iostream.IOStream(s, io_loop=io_loop)
-        yield add_timeout_to_connect(
-            stream,
-            args=[('127.0.0.1', port)],
-            timeout_secs=TIMEOUT
+        yield tornado.gen.with_timeout(
+                datetime.timedelta(seconds=TIMEOUT),
+                tornado.gen.Task(
+                    stream.connect, ('127.0.0.1', port))
         )
-    except Timeout:
+
+    except tornado.gen.TimeoutError:
         raise tornado.gen.Return((
             503,
             'Connection timed out after %.2fs' % (time.time() - connect_start)
@@ -137,6 +97,8 @@ def check_tcp(service_name, port, query, io_loop, query_params, headers):
     finally:
         if stream:
             stream.close()
+        # Some necessary house-keeping
+        del stream
     raise tornado.gen.Return((
         200,
         'Connected in %.2fs' % (time.time() - connect_start)

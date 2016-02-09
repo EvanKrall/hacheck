@@ -2,6 +2,7 @@ import logging
 import optparse
 import signal
 import time
+import types
 import sys
 import resource
 
@@ -20,6 +21,9 @@ try:
 except ImportError:
     initialize_mutornadomon = None
 
+class DummyTimeout(object):
+    callback = None
+DUMMY = DummyTimeout()
 
 def log_request(handler):
     # log requests at INFO instead of WARNING for all status codes
@@ -38,6 +42,12 @@ def get_app():
         (r'/status/count', handlers.ServiceCountHandler),
         (r'/status', handlers.StatusHandler),
     ], start_time=time.time(), log_function=log_request)
+
+
+def remove_timeout(self, timeout):
+    timeout.callback = None
+    timeout = DUMMY
+    self._cancellations += 1
 
 
 def setrlimit_nofile(soft_target):
@@ -112,6 +122,7 @@ def main():
     spool.configure(spool_root=opts.spool_root)
     application = get_app()
     ioloop = tornado.ioloop.IOLoop.instance()
+    ioloop.remove_timeout = types.MethodType(remove_timeout, ioloop)
     server = tornado.httpserver.HTTPServer(application, io_loop=ioloop)
 
     if initialize_mutornadomon is not None:
