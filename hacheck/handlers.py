@@ -116,3 +116,7 @@ class TCPServiceHandler(BaseServiceHandler):
 
 class MySQLServiceHandler(BaseServiceHandler):
     CHECKERS = [checker.check_spool, checker.check_mysql]
+
+
+class SMTPServiceHandler(BaseServiceHandler):
+    CHECKERS = [checker.check_spool, checker.check_smtp]

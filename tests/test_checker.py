@@ -144,3 +144,48 @@ class TestTCPChecker(tornado.testing.AsyncTestCase):
         with mock.patch.object(checker, 'TIMEOUT', 1):
             response = yield checker.check_tcp("foo", self.unlistened_port, None, io_loop=self.io_loop, query_params="", headers={})
             self.assertEqual(response[0], 503)
+
+
+class TestSMTPServer(tornado.tcpserver.TCPServer):
+    def __init__(self, *args, **kwargs):
+        super(TestSMTPServer, self).__init__(*args, **kwargs)
+        self.never_respond = False
+
+    @tornado.gen.coroutine
+    def handle_stream(self, stream, address):
+        if self.never_respond:
+            stream.close()
+            return
+        yield stream.write(b'220 some.host MTA NAME\r\n')
+        assert b'QUIT\r\n' == (yield stream.read_until(b'\r\n'))
+        yield stream.write(b'221 2.0.0 Bye\r\n')
+        stream.close()
+
+
+class TestSMTPChecker(tornado.testing.AsyncTestCase):
+    def setUp(self):
+        super(TestSMTPChecker, self).setUp()
+        socket, port = tornado.testing.bind_unused_port()
+        self.server = TestSMTPServer(io_loop=self.io_loop)
+        self.server.add_socket(socket)
+        self.socket = socket
+        self.port = port
+
+    def tearDown(self):
+        super(TestSMTPChecker, self).tearDown()
+        try:
+            self.server.stop()
+            self.socket.close()
+        except Exception:
+            pass
+
+    @tornado.testing.gen_test
+    def test_check_success(self):
+        response = yield checker.check_smtp("foo", self.port, None, io_loop=self.io_loop, query_params="", headers={})
+        self.assertEqual(200, response[0])
+
+    @tornado.testing.gen_test
+    def test_check_failure(self):
+        with mock.patch.object(self.server, 'never_respond', True):
+            response = yield checker.check_smtp("foo", self.port, None, io_loop=self.io_loop, query_params="", headers={})
+            self.assertEqual((503, 'Peer unexpectedly closed connection'), response)
