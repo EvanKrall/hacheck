@@ -82,9 +82,8 @@ def check_tcp(service_name, port, query, io_loop, query_params, headers):
     try:
         stream = tornado.iostream.IOStream(s, io_loop=io_loop)
         yield tornado.gen.with_timeout(
-                datetime.timedelta(seconds=TIMEOUT),
-                tornado.gen.Task(
-                    stream.connect, ('127.0.0.1', port))
+            datetime.timedelta(seconds=TIMEOUT),
+            tornado.gen.Task(stream.connect, ('127.0.0.1', port))
         )
 
     except tornado.gen.TimeoutError:

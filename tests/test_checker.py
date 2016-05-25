@@ -208,5 +208,6 @@ class TestSMTPChecker(tornado.testing.AsyncTestCase):
     @tornado.testing.gen_test
     def test_check_failure(self):
         with mock.patch.object(self.server, 'never_respond', True):
-            response = yield checker.check_smtp("foo", self.port, None, io_loop=self.io_loop, query_params="", headers={})
+            response = yield checker.check_smtp("foo", self.port, None, io_loop=self.io_loop, query_params="",
+                                                headers={})
             self.assertEqual((503, 'Peer unexpectedly closed connection'), response)

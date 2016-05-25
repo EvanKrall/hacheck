@@ -21,9 +21,11 @@ try:
 except ImportError:
     initialize_mutornadomon = None
 
+
 class DummyTimeout(object):
     callback = None
 DUMMY = DummyTimeout()
+
 
 def log_request(handler):
     # log requests at INFO instead of WARNING for all status codes
