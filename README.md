@@ -18,6 +18,25 @@ When it does query the actual service check endpoint, **hacheck** MAY cache the 
 
 **hacheck** also comes with the command-line utilities `haup`, `hadown`, and `hastatus`. These take a service name and manipulate the spool files, allowing you to pre-emptively mark a service as "up" or "down".
 
+### Yelp/hacheck versus uber/hacheck
+
+This software was originally developed by [Uber](https://github.com/uber/hacheck).
+This version has several features not present in the upstream version:
+
+* By setting the `allow_remote_spool_changes` flag in the config file, it becomes possible to POST changes to spool
+  status remotely.
+  This is useful if there is some software, like [Paasta](github.com/Yelp/paasta) making decisions centrally about when
+  to kill tasks.
+* If the client sends the header `X-Haproxy-Server-State`, then we use the port specified in that header and ignore the
+  port in the URL.
+  This is useful for configurations where an HAProxy has a backend with many servers running on different ports, such
+  as when your tasks are running under [Marathon](github.com/mesosphere/marathon).
+* Spool files(downtimes) can optionally have expirations, and store information about when they were created.
+* Spool files(downtimes) can apply to a service on a specific port - useful if you have multiple copies of a service on
+  the same box.
+* It is possible to specify (via `http_headers_to_copy` in the config file) a set of headers that should be forwarded
+  to the service being checked.
+
 ### Dependencies
 
 **hacheck** is written in Python and makes extensive use of the [tornado](http://www.tornadoweb.org/en/stable/) asynchronous web framework (specifically, it uses the coroutine stuff in Tornado 3). Unit tests use nose and mock.
