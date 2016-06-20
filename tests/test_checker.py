@@ -130,7 +130,7 @@ class TestHTTPChecker(tornado.testing.AsyncHTTPTestCase):
 class TestServer(tornado.tcpserver.TCPServer):
     @tornado.gen.coroutine
     def handle_stream(self, stream, address):
-        yield stream.write('hello')
+        yield stream.write(b'hello')
         stream.close()
 
 
