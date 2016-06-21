@@ -1,22 +1,28 @@
 sudo: false
 language: python
-python:
-    - "2.6"
-    - "2.7"
-    - "3.2"
-    - "3.3"
-    - "3.4"
+install:
+  - pip install tox
 env:
-    - TORNADO_VERSION=4.1.0
-    - TORNADO_VERSION=4.3.0
-install: 
-    - "pip install -r requirements.txt -r requirements-tests.txt --use-mirrors"
-    - "if [[ ${TRAVIS_PYTHON_VERSION::1} != '3' ]]; then pip install -r requirements-py2.txt --use-mirrors; fi"
-    - "pip install tornado==$TORNADO_VERSION"
+  # from `tox -l`.
+  - TOXENV=py26-tornado41
+  - TOXENV=py26-tornado43
+  - TOXENV=py26-flake
+  - TOXENV=py27-tornado41
+  - TOXENV=py27-tornado43
+  - TOXENV=py27-flake
+  - TOXENV=py33-tornado41
+  - TOXENV=py33-tornado43
+  - TOXENV=py33-flake
+  - TOXENV=py34-tornado41
+  - TOXENV=py34-tornado43
+  - TOXENV=py34-flake
+  - TOXENV=py35-tornado41
+  - TOXENV=py35-tornado43
+  - TOXENV=py35-flake
 # only build master and PRs, not every branch
 branches:
     only:
         - master
-script: "nosetests"
+script: tox -e $TOXENV
 matrix:
     fast_finish: true
