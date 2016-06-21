@@ -39,6 +39,7 @@ class ReturnFiveOhOne(tornado.web.RequestHandler):
         self.set_status(501)
         self.write(b'NOPE')
 
+
 class ReturnThreeOhOne(tornado.web.RequestHandler):
     def get(self):
         self.set_status(301)
@@ -91,8 +92,9 @@ class TestHTTPChecker(tornado.testing.AsyncHTTPTestCase):
         self.assertEqual(404, code)
 
     @tornado.testing.gen_test
-    def test_check_failure(self):
-        code, response = yield checker.check_http("foo", self.get_http_port(), "/redirect", io_loop=self.io_loop, query_params="", headers={})
+    def test_check_redirect(self):
+        code, response = yield checker.check_http("foo", self.get_http_port(), "/redirect", io_loop=self.io_loop,
+                                                  query_params="", headers={})
         self.assertEqual(301, code)
 
     @tornado.testing.gen_test
