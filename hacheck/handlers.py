@@ -10,6 +10,8 @@ import tornado.web
 
 from . import cache
 from . import checker
+from . import config
+from . import spool
 
 log = logging.getLogger('hacheck')
 
@@ -67,9 +69,37 @@ class ServiceCountHandler(tornado.web.RequestHandler):
 class BaseServiceHandler(tornado.web.RequestHandler):
     CHECKERS = []
 
+    def maybe_get_port_from_haproxy_server_state(self):
+        """
+        Look for the 'X-Haproxy-Server-State' header and try to parse out the
+        'port' value.
+
+        Note that only very recent versions of HAProxy support sending
+        the port in the send-state header. In particular you need
+        commit 514061c414080701cb046171041a2d00859660e8 from haproxy dev.
+
+        Example server state header:
+
+            X-Haproxy-Server-State: UP 2/3; address=srv2; port=1234;
+              name=bck/srv2; node=lb1; weight=1/2; scur=13/22; qcur=0
+
+        returns: the string-typed port if found, else None.
+        """
+
+        server_state = self.request.headers.get('X-Haproxy-Server-State', '')
+
+        parts = server_state.split(';')
+        parts = [part.strip() for part in parts]
+        parts = [part.split('=') for part in parts]
+        parts = [part for part in parts if len(part) == 2]
+
+        return dict(parts).get('port')
+
     @tornado.web.asynchronous
     @tornado.gen.coroutine
     def get(self, service_name, port, query):
+        port = self.maybe_get_port_from_haproxy_server_state() or port
+
         seen_services[service_name] = time.time()
         service_count[service_name][self.request.remote_ip] += 1
         with cache.maybe_bust(self.request.headers.get('Pragma', '') == 'no-cache'):
@@ -104,6 +134,34 @@ class BaseServiceHandler(tornado.web.RequestHandler):
 
 class SpoolServiceHandler(BaseServiceHandler):
     CHECKERS = [checker.check_spool]
+
+    def post(self, service_name, port, query):
+        if not config.config['allow_remote_spool_changes']:
+            self.set_status(403)
+            self.write('remote spool changes are not enabled')
+            return
+
+        port = int(port) or None
+        status = self.get_argument('status')
+
+        if status == 'up':
+            spool.up(service_name, port=port)
+        elif status == 'down':
+            expiration = self.get_argument('expiration', None)
+            if expiration is not None:
+                expiration = float(expiration)
+            reason = self.get_argument('reason')
+            creation = self.get_argument('creation', None)
+            if creation is not None:
+                creation = float(creation)
+            spool.down(service_name, reason=reason, port=port, expiration=expiration, creation=creation)
+        else:
+            self.set_status(400)
+            self.write("status must be up or down")
+            return
+
+        self.set_status(200)
+        self.write("")
 
 
 class HTTPServiceHandler(BaseServiceHandler):

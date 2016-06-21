@@ -21,9 +21,11 @@ try:
 except ImportError:
     initialize_mutornadomon = None
 
+
 class DummyTimeout(object):
     callback = None
 DUMMY = DummyTimeout()
+
 
 def log_request(handler):
     # log requests at INFO instead of WARNING for all status codes
@@ -34,11 +36,11 @@ def log_request(handler):
 
 def get_app():
     return tornado.web.Application([
-        (r'/http/([a-zA-Z0-9_-]+)/([0-9]+)/(.*)', handlers.HTTPServiceHandler),
-        (r'/tcp/([a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.TCPServiceHandler),
-        (r'/mysql/([a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.MySQLServiceHandler),
-        (r'/smtp/([a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.SMTPServiceHandler),
-        (r'/spool/([a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.SpoolServiceHandler),
+        (r'/http/([.a-zA-Z0-9_-]+)/([0-9]+)/(.*)', handlers.HTTPServiceHandler),
+        (r'/tcp/([.a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.TCPServiceHandler),
+        (r'/mysql/([.a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.MySQLServiceHandler),
+        (r'/smtp/([.a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.SMTPServiceHandler),
+        (r'/spool/([.a-zA-Z0-9_-]+)/([0-9]+)/?(.*)', handlers.SpoolServiceHandler),
         (r'/recent', handlers.ListRecentHandler),
         (r'/status/count', handlers.ServiceCountHandler),
         (r'/status', handlers.StatusHandler),

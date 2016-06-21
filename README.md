@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/uber/hacheck.png)](https://travis-ci.org/uber/hacheck)
+[![Build Status](https://travis-ci.org/Yelp/hacheck.png)](https://travis-ci.org/Yelp/hacheck)
 
 **hacheck** is a healthcheck-proxying service. It listens on port 3333, speaks HTTP, and has the following API:
 
@@ -17,6 +17,25 @@ This will check the following locations for service state:
 When it does query the actual service check endpoint, **hacheck** MAY cache the value of that query for some amount of time
 
 **hacheck** also comes with the command-line utilities `haup`, `hadown`, and `hastatus`. These take a service name and manipulate the spool files, allowing you to pre-emptively mark a service as "up" or "down".
+
+### Yelp/hacheck versus uber/hacheck
+
+This software was originally developed by [Uber](https://github.com/uber/hacheck).
+This version has several features not present in the upstream version:
+
+* By setting the `allow_remote_spool_changes` flag in the config file, it becomes possible to POST changes to spool
+  status remotely.
+  This is useful if there is some software, like [Paasta](github.com/Yelp/paasta) making decisions centrally about when
+  to kill tasks.
+* If the client sends the header `X-Haproxy-Server-State`, then we use the port specified in that header and ignore the
+  port in the URL.
+  This is useful for configurations where an HAProxy has a backend with many servers running on different ports, such
+  as when your tasks are running under [Marathon](github.com/mesosphere/marathon).
+* Spool files(downtimes) can optionally have expirations, and store information about when they were created.
+* Spool files(downtimes) can apply to a service on a specific port - useful if you have multiple copies of a service on
+  the same box.
+* It is possible to specify (via `http_headers_to_copy` in the config file) a set of headers that should be forwarded
+  to the service being checked.
 
 ### Dependencies
 
@@ -37,6 +56,7 @@ Imagine you want to take down the server `web01` for maintenance. Just SSH to it
 * `mysql_username`: username to use when logging into mysql for checks
 * `mysql_password`: password to use when logging into mysql for checks
 * `rlimit_nofile`: set the NOFILE rlimit. If the string "max", will set the rlimit to the hard rlimit; otherwise, will be interpreted as an integer and set to that value.
+* `allow_remote_spool_changes`: whether to allow remote control of spool files.
 
 ### Monitoring
 
