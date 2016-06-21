@@ -1,28 +1,12 @@
 sudo: false
 language: python
+python: [2.6, 2.7, 3.3, 3.4, 3.5]
 install:
   - pip install tox
-env:
-  # from `tox -l`.
-  - TOXENV=py26-tornado41
-  - TOXENV=py26-tornado43
-  - TOXENV=py26-flake
-  - TOXENV=py27-tornado41
-  - TOXENV=py27-tornado43
-  - TOXENV=py27-flake
-  - TOXENV=py33-tornado41
-  - TOXENV=py33-tornado43
-  - TOXENV=py33-flake
-  - TOXENV=py34-tornado41
-  - TOXENV=py34-tornado43
-  - TOXENV=py34-flake
-  - TOXENV=py35-tornado41
-  - TOXENV=py35-tornado43
-  - TOXENV=py35-flake
 # only build master and PRs, not every branch
 branches:
     only:
         - master
-script: tox -e $TOXENV
+script: PY=py${TRAVIS_PYTHON_VERSION/./}; tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake
 matrix:
     fast_finish: true
