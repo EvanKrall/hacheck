@@ -30,6 +30,13 @@ def parse_spool_file_path(path):
 
 
 def serialize_spool_file_contents(reason, expiration=None, creation=None):
+    """Serialize the contents of the spool file (as JSON).
+
+    :param reason: a string representing the reason why the downtime exists.
+    :param expiration: The unix time when this downtime should be considered valid until, or None for no expiry.
+    :param creation: The unix time when this downtime was created, or None if unknown.
+    :returns: A JSON-formatted dictionary with keys reason, expiration, and creation, corresponding to the parameters.
+    """
     return json.dumps({
         "reason": reason,
         "expiration": expiration,
@@ -38,7 +45,15 @@ def serialize_spool_file_contents(reason, expiration=None, creation=None):
 
 
 def deserialize_spool_file_contents(contents):
+    """Deserialize the contents of the spool file, with a reasonable default if the file was created by an older version
+    of hacheck.
+
+    :returns: contents, JSON-deserialized, or a dictionary representing with reason->contents, expiration->None, and
+              creation->None. See serialize_spool_file_contents for the keys to expect in the dictionary.
+    """
+
     try:
+        # TODO: Enforce that this dictionary contains the expected keys.
         return json.loads(contents)
     except ValueError:
         # in case we're looking at a file created by earlier versions of hacheck
@@ -63,7 +78,7 @@ def is_up(service_name, port=None):
     """Check whether a service is asserted to be up or down. Includes the logic
     for checking system-wide all state
 
-    :returns: (bool of service status, dict of extra information)
+    :returns: (bool of service status, dict of info as returned by deserialize_spool_file_contents)
     """
     all_up, all_info = status("all")
     if all_up:
@@ -81,7 +96,7 @@ def status(service_name, port=None):
     """Check whether a service is asserted to be up or down, without checking
     the system-wide 'all' state.
 
-    :returns: (bool of service status, dict of extra information)
+    :returns: (bool of service status, dict of info as returned by deserialize_spool_file_contents)
     """
     happy_retval = (True, {'service': service_name, 'reason': '', 'expiration': None})
     path = spool_file_path(service_name, port)
@@ -101,7 +116,7 @@ def status(service_name, port=None):
 def status_all_down():
     """List all down services
 
-    :returns: Iterable of pairs of (service name, dict of extra information)
+    :returns: Iterable of pairs of (service name, port, dict of info as returned by deserialize_spool_file_contents)
     """
     for filename in os.listdir(config['spool_root']):
         service_name, port = parse_spool_file_path(filename)
