@@ -1,22 +1,25 @@
 sudo: false
 language: python
 python:
-    - "2.6"
-    - "2.7"
-    - "3.2"
-    - "3.3"
-    - "3.4"
+- '2.6'
+- '2.7'
+- '3.2'
+- '3.3'
+- '3.4'
 env:
-    - TORNADO_VERSION=4.1.0
-    - TORNADO_VERSION=4.3.0
-install: 
-    - "pip install -r requirements.txt -r requirements-tests.txt --use-mirrors"
-    - "if [[ ${TRAVIS_PYTHON_VERSION::1} != '3' ]]; then pip install -r requirements-py2.txt --use-mirrors; fi"
-    - "pip install tornado==$TORNADO_VERSION"
-# only build master and PRs, not every branch
+- TORNADO_VERSION=4.1.0
+- TORNADO_VERSION=4.3.0
+install:
+- pip install -r requirements.txt -r requirements-tests.txt --use-mirrors
+- if [[ ${TRAVIS_PYTHON_VERSION::1} != '3' ]]; then pip install -r requirements-py2.txt
+  --use-mirrors; fi
+- pip install tornado==$TORNADO_VERSION
 branches:
-    only:
-        - master
-script: "nosetests"
+  only:
+  - master
+script: nosetests
 matrix:
-    fast_finish: true
+  fast_finish: true
+deploy:
+  key:
+    secure: XXYKkbrtGfpwyvYFR9IIozIzAAz+v1eEjzgI23OOiM11wrr7eQ79urieWuiW1KzkiGM/Pq/TRKA2WyOCFp04S6PQUIMSsD56Cic8HliDxkLrh7AdptOvoOvGiFjzz2+ubo/Me6+JVWG0lwCBeC3oos/rT0KeWp+LJ6sYol+FdUdPSTemv7dvdH7LbWePsQJNAJd66psFcaOLAlySdXM85SVOJU70+IFMduIUHvGzexzCTJTMMqssn/gKyB8lqKu5ab+NbFWy/dEDMMTL2QMkH1FdBAJBYxpV6OfBxbCN4n9PIl1Op+UGVK5g+5v0QuJ75TtOCzJdpKdJO0TQma8XB7Gq0AWZrMsCx76Ws5dAym4wxtXbeG/S7viHhqEBxoOQW1YV30VV/tCWD7qnnjy48zDgTqoSv2XvDX4ch1LoySZ7yBAfIv6nR9ktciGloOIW4vx3uAKuhDkVdabH2DC2sqYHShLQJ+OPEE+KI8C6QPFrE+8cK21PAA3/9+4lCV1S16nYH5Q63czYciodW6TBTKVNFkyIfawbe7VLk/87uLYQROWvZoJOv+OOu00XEdFbRMF5ooqCDQ9+FQ8tYOfFkoMep7OBL+5n6NlwezoIX11RcStYgiQWcuXlUftk4AbtAplaxHKEXNIHJhApY69b8gzQSruxmSV8ZI6efolXzXQ=
