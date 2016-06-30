@@ -6,18 +6,13 @@ python:
 - '3.2'
 - '3.3'
 - '3.4'
-env:
-- TORNADO_VERSION=4.1.0
-- TORNADO_VERSION=4.3.0
 install:
-- pip install -r requirements.txt -r requirements-tests.txt --use-mirrors
-- if [[ ${TRAVIS_PYTHON_VERSION::1} != '3' ]]; then pip install -r requirements-py2.txt
-  --use-mirrors; fi
-- pip install tornado==$TORNADO_VERSION
+  - pip install tox
+# only build master and PRs, not every branch
 branches:
   only:
   - master
-script: nosetests
+script: PY=py${TRAVIS_PYTHON_VERSION/./}; tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake
 matrix:
   fast_finish: true
 deploy:
