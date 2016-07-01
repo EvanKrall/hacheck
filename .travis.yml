@@ -1,19 +1,22 @@
 sudo: false
 language: python
-env:
-- 'PYTHON_VERSION=2.6'
-- 'PYTHON_VERSION=2.7'
-- 'PYTHON_VERSION=3.2'
-- 'PYTHON_VERSION=3.3'
-- 'PYTHON_VERSION=3.4'
-- 'BUILD_PKG=true'
+
+matrix:
+  include:
+    - python: "2.6"
+    - python: "2.7"
+    - python: "3.2"
+    - python: "3.3"
+    - python: "3.4"
+    - python: "2.7"
+      env: BUILD_PKG=true
 install:
   - pip install tox
 # only build master and PRs, not every branch
 branches:
   only:
   - master
-script: PY=py${PYTHON_VERSION/./}; if [[ -n "$BUILD_PKG" ]]; then make "itest_trusty"; else tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake; fi;
+script: PY=py${TRAVIS_PYTHON_VERSION/./}; if [[ -n "$BUILD_PKG" ]]; then make "itest_trusty"; else tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake; fi;
 matrix:
   fast_finish: true
 deploy:
