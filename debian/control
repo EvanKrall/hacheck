@@ -1,0 +1,8 @@
+Source: hacheck
+Maintainer: John Billings <billings@yelp.com>
+Build-Depends:
+    dh-virtualenv,
+
+Package: hacheck
+Architecture: any
+Description: hacheck

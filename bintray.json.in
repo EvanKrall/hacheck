@@ -1,0 +1,32 @@
+{
+    "package": {
+        "name": "hacheck",
+        "repo": "paasta",
+        "subject": "yelp",
+        "website_url": "https://github.com/Yelp/hacheck",
+        "issue_tracker_url": "https://github.com/Yelp/hacheck/issues",
+        "vcs_url": "https://github.com/Yelp/hacheck.git",
+        "github_use_tag_release_notes": true,
+        "github_release_notes_file": "RELEASE.md",
+        "licenses": ["MIT"],
+        "labels": [],
+        "public_download_numbers": false,
+        "public_stats": false,
+        "attributes": []
+    },
+
+    "version": {
+        "name": "@HACHECKVERSION@",
+        "desc": "Version @HACHECKVERSION@",
+        "released": "@DATE@",
+        "vcs_tag": "v@HACHECKVERSION@",
+        "attributes": [],
+        "gpgSign": false
+    },
+
+    "files":
+        [
+        {"includePattern": "dist/(hacheck.*\.deb)", "uploadPattern": "$1", "matrixParams": { "deb_distribution": "trusty", "deb_component": "main", "deb_architecture": "amd64"} }
+        ],
+    "publish": true
+}

@@ -1,20 +1,27 @@
 sudo: false
 language: python
-python:
-- '2.6'
-- '2.7'
-- '3.2'
-- '3.3'
-- '3.4'
+env:
+- 'PYTHON_VERSION=2.6'
+- 'PYTHON_VERSION=2.7'
+- 'PYTHON_VERSION=3.2'
+- 'PYTHON_VERSION=3.3'
+- 'PYTHON_VERSION=3.4'
+- 'BUILD_PKG=true'
 install:
   - pip install tox
 # only build master and PRs, not every branch
 branches:
   only:
   - master
-script: PY=py${TRAVIS_PYTHON_VERSION/./}; tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake
+script: PY=py${PYTHON_VERSION/./}; if [[ -n "$BUILD_PKG" ]]; then make "itest_trusty"; else tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake; fi;
 matrix:
   fast_finish: true
 deploy:
-  key:
-    secure: XXYKkbrtGfpwyvYFR9IIozIzAAz+v1eEjzgI23OOiM11wrr7eQ79urieWuiW1KzkiGM/Pq/TRKA2WyOCFp04S6PQUIMSsD56Cic8HliDxkLrh7AdptOvoOvGiFjzz2+ubo/Me6+JVWG0lwCBeC3oos/rT0KeWp+LJ6sYol+FdUdPSTemv7dvdH7LbWePsQJNAJd66psFcaOLAlySdXM85SVOJU70+IFMduIUHvGzexzCTJTMMqssn/gKyB8lqKu5ab+NbFWy/dEDMMTL2QMkH1FdBAJBYxpV6OfBxbCN4n9PIl1Op+UGVK5g+5v0QuJ75TtOCzJdpKdJO0TQma8XB7Gq0AWZrMsCx76Ws5dAym4wxtXbeG/S7viHhqEBxoOQW1YV30VV/tCWD7qnnjy48zDgTqoSv2XvDX4ch1LoySZ7yBAfIv6nR9ktciGloOIW4vx3uAKuhDkVdabH2DC2sqYHShLQJ+OPEE+KI8C6QPFrE+8cK21PAA3/9+4lCV1S16nYH5Q63czYciodW6TBTKVNFkyIfawbe7VLk/87uLYQROWvZoJOv+OOu00XEdFbRMF5ooqCDQ9+FQ8tYOfFkoMep7OBL+5n6NlwezoIX11RcStYgiQWcuXlUftk4AbtAplaxHKEXNIHJhApY69b8gzQSruxmSV8ZI6efolXzXQ=
+  - provider: bintray
+    file: "bintray.json"
+    user: yelptravis
+    key:
+      secure: "XXYKkbrtGfpwyvYFR9IIozIzAAz+v1eEjzgI23OOiM11wrr7eQ79urieWuiW1KzkiGM/Pq/TRKA2WyOCFp04S6PQUIMSsD56Cic8HliDxkLrh7AdptOvoOvGiFjzz2+ubo/Me6+JVWG0lwCBeC3oos/rT0KeWp+LJ6sYol+FdUdPSTemv7dvdH7LbWePsQJNAJd66psFcaOLAlySdXM85SVOJU70+IFMduIUHvGzexzCTJTMMqssn/gKyB8lqKu5ab+NbFWy/dEDMMTL2QMkH1FdBAJBYxpV6OfBxbCN4n9PIl1Op+UGVK5g+5v0QuJ75TtOCzJdpKdJO0TQma8XB7Gq0AWZrMsCx76Ws5dAym4wxtXbeG/S7viHhqEBxoOQW1YV30VV/tCWD7qnnjy48zDgTqoSv2XvDX4ch1LoySZ7yBAfIv6nR9ktciGloOIW4vx3uAKuhDkVdabH2DC2sqYHShLQJ+OPEE+KI8C6QPFrE+8cK21PAA3/9+4lCV1S16nYH5Q63czYciodW6TBTKVNFkyIfawbe7VLk/87uLYQROWvZoJOv+OOu00XEdFbRMF5ooqCDQ9+FQ8tYOfFkoMep7OBL+5n6NlwezoIX11RcStYgiQWcuXlUftk4AbtAplaxHKEXNIHJhApY69b8gzQSruxmSV8ZI6efolXzXQ="
+    on:
+      branch: master
+      repo: Yelp/hacheck

@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+export DH_OPTIONS
+
+LSBDISTRELEASE := $(shell lsb_release -sr)
+
+ifeq ($(LSBDISTRELEASE),14.04)
+  # wheels built on Lucid won't work for Trusty
+  pip_args=--extra-pip-arg='--no-use-wheel' --no-test
+else
+  pip_args=--no-test
+endif
+
+%:
+	dh $@ --with python-virtualenv
+
+override_dh_virtualenv:
+	dh_virtualenv --pypi-url='https://pypi.yelpcorp.com/simple' $(pip_args)

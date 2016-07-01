@@ -10,3 +10,4 @@ env27/
 env32/
 env33/
 .tox/
+bintray.json

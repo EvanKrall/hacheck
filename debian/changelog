@@ -1,0 +1,36 @@
+hacheck (0.9.0-yelp3) lucid; urgency=low
+
+  * No longer follow redirects, instead return
+  * Fix tornado version to hopefully avoid memory leaks
+
+ -- Tomas Doran <tdoran@yelp.com>  Tue, 09 Feb 2016 01:37:27 -0800
+
+hacheck (0.9.0-yelp2) lucid; urgency=low
+
+  * Bump yelp-hacheck version.
+
+ -- Evan Krall <krall@yelp.com>  Tue, 21 Jul 2015 14:48:16 -0800
+
+hacheck (0.9.0-yelp1) lucid; urgency=low
+
+  * Bump yelp-hacheck version.
+
+ -- Evan Krall <krall@yelp.com>  Thu, 16 Jul 2015 17:13:33 -0800
+
+hacheck (0.6.1-yelp2) lucid; urgency=low
+
+  * Bump yelp-hacheck version.
+
+ -- John Billings <billings@yelp.com>  Wed, 21 Jan 2015 13:47:21 -0800
+
+hacheck (0.6.1-yelp1) lucid; urgency=low
+
+  * Switch to yelp-hacheck.
+
+ -- John Billings <billings@yelp.com>  Tue, 20 Jan 2015 13:44:39 -0800
+
+hacheck (0.6.1) lucid; urgency=low
+
+  * Initial release.
+
+ -- John Billings <billings@yelp.com>  Wed, 07 Jan 2015 16:12:14 -0800

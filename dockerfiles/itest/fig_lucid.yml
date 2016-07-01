@@ -1,0 +1,4 @@
+itest:
+  build: dockerfiles/itest/itest_lucid
+  volumes:
+   - .:/work
