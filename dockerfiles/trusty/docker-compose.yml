@@ -1,0 +1,5 @@
+trusty:
+  build: .
+  command: bash -c "dpkg-buildpackage -d -uc -us && mv ../*.deb ./dist/"
+  volumes:
+   - ../../:/work
