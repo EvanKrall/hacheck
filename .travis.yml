@@ -1,6 +1,5 @@
 sudo: false
 language: python
-
 matrix:
   include:
     - python: "2.6"
@@ -10,6 +9,7 @@ matrix:
     - python: "3.4"
     - python: "2.7"
       env: BUILD_PKG=true
+  fast_finish: true
 install:
   - pip install tox
 # only build master and PRs, not every branch
@@ -17,8 +17,6 @@ branches:
   only:
   - master
 script: PY=py${TRAVIS_PYTHON_VERSION/./}; if [[ -n "$BUILD_PKG" ]]; then make "itest_trusty"; else tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake; fi;
-matrix:
-  fast_finish: true
 deploy:
   - provider: bintray
     file: "bintray.json"

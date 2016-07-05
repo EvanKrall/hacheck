@@ -1,10 +1,10 @@
-FROM docker-dev.yelpcorp.com/trusty_yelp
-MAINTAINER John Billings <billings@yelp.com>
+FROM ubuntu:trusty
 
-RUN rm -f /etc/apt/sources.list.d/proposed.list
-RUN apt-get update
+RUN apt-get update && apt-get -y install dpkg-dev python-tox python-setuptools \
+  python-dev debhelper python-yaml libyaml-dev git wget
 
-RUN apt-get -y install dpkg-dev python-tox python-setuptools dh-virtualenv
-RUN apt-get -y install python-dev debhelper libyaml-dev
+RUN cd `mktemp -d` && wget http://mirrors.kernel.org/ubuntu/pool/universe/d/dh-virtualenv/dh-virtualenv_0.11-1_all.deb && dpkg -i dh-virtualenv_0.11-1_all.deb && apt-get -f install
 
+ENV HOME /work
+ENV PWD /work
 WORKDIR /work

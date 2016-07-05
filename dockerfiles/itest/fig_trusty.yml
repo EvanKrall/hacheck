@@ -1,4 +1,0 @@
-itest:
-  build: dockerfiles/itest/itest_trusty
-  volumes:
-   - .:/work
