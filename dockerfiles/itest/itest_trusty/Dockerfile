@@ -5,6 +5,4 @@ RUN apt-get update && apt-get -y install python-dev
 
 ADD itest.sh /itest.sh
 
-RUN chmod +x /itest.sh
-
 CMD /itest.sh

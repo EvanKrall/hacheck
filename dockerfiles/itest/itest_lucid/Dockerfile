@@ -5,6 +5,4 @@ RUN apt-get update
 
 ADD itest.sh /itest.sh
 
-RUN chmod +x /itest.sh
-
 CMD /itest.sh
