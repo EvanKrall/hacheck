@@ -1,7 +1,7 @@
 Source: hacheck
 Maintainer: John Billings <billings@yelp.com>
 Build-Depends:
-    dh-virtualenv, python, debhelper (>= 7)
+    dh-virtualenv, python2.7, debhelper (>= 7)
 
 Package: hacheck
 Architecture: any
