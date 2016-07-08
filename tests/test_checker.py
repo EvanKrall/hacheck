@@ -68,7 +68,9 @@ class TestChecker(TestCase):
             is_up_patch.assert_called_once_with(se.name, port=se.port)
 
 
-class TestHTTPChecker(tornado.testing.AsyncHTTPTestCase):
+class BaseTestHTTPHTTPSChecker(object):
+    def check_http_https(self, *args, **kwargs):
+        raise NotImplementedError
 
     def get_app(self):
         return tornado.web.Application([
@@ -81,52 +83,62 @@ class TestHTTPChecker(tornado.testing.AsyncHTTPTestCase):
 
     @tornado.testing.gen_test
     def test_check_success(self):
-        response = yield checker.check_http("foo", self.get_http_port(), "/", io_loop=self.io_loop, query_params="",
-                                            headers={})
+        response = yield self.check_http_https("foo", self.get_http_port(), "/", io_loop=self.io_loop, query_params="",
+                                               headers={})
         self.assertEqual((200, b'TEST OK'), response)
 
     @tornado.testing.gen_test
     def test_check_failure(self):
-        code, response = yield checker.check_http("foo", self.get_http_port(), "/bar", io_loop=self.io_loop,
-                                                  query_params="", headers={})
+        code, response = yield self.check_http_https("foo", self.get_http_port(), "/bar", io_loop=self.io_loop,
+                                                     query_params="", headers={})
         self.assertEqual(404, code)
 
     @tornado.testing.gen_test
     def test_check_redirect(self):
-        code, response = yield checker.check_http("foo", self.get_http_port(), "/redirect", io_loop=self.io_loop,
-                                                  query_params="", headers={})
+        code, response = yield self.check_http_https("foo", self.get_http_port(), "/redirect", io_loop=self.io_loop,
+                                                     query_params="", headers={})
         self.assertEqual(301, code)
 
     @tornado.testing.gen_test
     def test_check_failure_with_code(self):
-        code, response = yield checker.check_http("foo", self.get_http_port(), "/bip", io_loop=self.io_loop,
-                                                  query_params="", headers={})
+        code, response = yield self.check_http_https("foo", self.get_http_port(), "/bip", io_loop=self.io_loop,
+                                                     query_params="", headers={})
         self.assertEqual(501, code)
 
     @tornado.testing.gen_test
     def test_check_wrong_port(self):
-        code, response = yield checker.check_http("foo", self.get_http_port() + 1, "/", io_loop=self.io_loop,
-                                                  query_params="", headers={})
+        code, response = yield self.check_http_https("foo", self.get_http_port() + 1, "/", io_loop=self.io_loop,
+                                                     query_params="", headers={})
         self.assertEqual(599, code)
 
     @tornado.testing.gen_test
     def test_service_name_header(self):
         with mock.patch.dict(config.config, {'service_name_header': 'SName'}):
-            code, response = yield checker.check_http('service_name', self.get_http_port(), "/sname",
-                                                      io_loop=self.io_loop, query_params="", headers={})
+            code, response = yield self.check_http_https('service_name', self.get_http_port(), "/sname",
+                                                         io_loop=self.io_loop, query_params="", headers={})
             self.assertEqual(b'service_name', response)
 
     @tornado.testing.gen_test
     def test_query_params_passed(self):
-        response = yield checker.check_http("foo", self.get_http_port(), "/echo_foo", io_loop=self.io_loop,
-                                            query_params="foo=bar", headers={})
+        response = yield self.check_http_https("foo", self.get_http_port(), "/echo_foo", io_loop=self.io_loop,
+                                               query_params="foo=bar", headers={})
         self.assertEqual((200, b'bar'), response)
 
     @tornado.testing.gen_test
     def test_query_params_not_passed(self):
-        response = yield checker.check_http("foo", self.get_http_port(), "/echo_foo", io_loop=self.io_loop,
-                                            query_params="", headers={})
+        response = yield self.check_http_https("foo", self.get_http_port(), "/echo_foo", io_loop=self.io_loop,
+                                               query_params="", headers={})
         self.assertEqual(400, response[0])
+
+
+class TestHTTPChecker(BaseTestHTTPHTTPSChecker, tornado.testing.AsyncHTTPTestCase):
+    def check_http_https(self, *args, **kwargs):
+        return checker.check_http(*args, **kwargs)
+
+
+class TestHTTPSChecker(BaseTestHTTPHTTPSChecker, tornado.testing.AsyncHTTPSTestCase):
+    def check_http_https(self, *args, **kwargs):
+        return checker.check_https(*args, **kwargs)
 
 
 class TestServer(tornado.tcpserver.TCPServer):
