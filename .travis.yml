@@ -18,7 +18,7 @@ install:
 branches:
   only:
   - master
-  - /^v[0-9.]+$/
+  - /^v[0-9.].*$/
 script: PY=py${TRAVIS_PYTHON_VERSION/./}; if [[ -n "$BUILD_PKG" ]]; then make "itest_trusty"; else tox -e ${PY}-tornado41,${PY}-tornado43,${PY}-flake; fi;
 deploy:
   - provider: bintray
