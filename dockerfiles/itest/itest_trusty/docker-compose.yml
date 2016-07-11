@@ -1,0 +1,4 @@
+itest:
+  build: .
+  volumes:
+   - ../../../:/work

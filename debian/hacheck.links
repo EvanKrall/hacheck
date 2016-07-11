@@ -1,0 +1,6 @@
+usr/share/python/hacheck/bin/hacheck usr/bin/hacheck
+usr/share/python/hacheck/bin/hadown usr/bin/hadown
+usr/share/python/hacheck/bin/halist usr/bin/halist
+usr/share/python/hacheck/bin/hashowdowned usr/bin/hashowdowned
+usr/share/python/hacheck/bin/hastatus usr/bin/hastatus
+usr/share/python/hacheck/bin/haup usr/bin/haup
