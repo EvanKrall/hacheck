@@ -1,3 +1,9 @@
+hacheck (0.9.0-yelp4) lucid; urgency=low
+
+  * Bump yelp-hacheck version.
+
+ -- Keshav Varma <keshav@yelp.com>  Mon, 11 Jul 2016 15:17:04 -0700
+
 hacheck (0.9.0-yelp3) lucid; urgency=low
 
   * No longer follow redirects, instead return
