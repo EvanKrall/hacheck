@@ -168,6 +168,10 @@ class HTTPServiceHandler(BaseServiceHandler):
     CHECKERS = [checker.check_spool, checker.check_http]
 
 
+class HTTPSServiceHandler(BaseServiceHandler):
+    CHECKERS = [checker.check_spool, checker.check_https]
+
+
 class TCPServiceHandler(BaseServiceHandler):
     CHECKERS = [checker.check_spool, checker.check_tcp]
 

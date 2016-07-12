@@ -38,6 +38,21 @@ def check_spool(service_name, port, query, io_loop, callback, query_params, head
 @cache.cached
 @tornado.gen.coroutine
 def check_http(service_name, port, check_path, io_loop, query_params, headers):
+    return check_http_https(service_name, port, check_path, io_loop, query_params, headers, False)
+
+
+# IMPORTANT: the gen.coroutine decorator needs to be the innermost
+@cache.cached
+@tornado.gen.coroutine
+def check_https(service_name, port, check_path, io_loop, query_params, headers):
+    return check_http_https(service_name, port, check_path, io_loop, query_params, headers, True)
+
+
+def check_http_https(service_name, port, check_path, io_loop, query_params, headers, ssl):
+    if ssl:
+        method = "https"
+    else:
+        method = "http"
     qp = query_params
     if not check_path.startswith("/"):
         check_path = "/" + check_path  # pragma: no cover
@@ -47,13 +62,14 @@ def check_http(service_name, port, check_path, io_loop, query_params, headers):
             headers_out[header] = headers[header]
     if config.config['service_name_header']:
         headers_out[config.config['service_name_header']] = service_name
-    path = 'http://127.0.0.1:%d%s%s' % (port, check_path, '?' + qp if qp else '')
+    path = '%s://127.0.0.1:%d%s%s' % (method, port, check_path, '?' + qp if qp else '')
     request = tornado.httpclient.HTTPRequest(
         path,
         method='GET',
         headers=headers_out,
         request_timeout=TIMEOUT,
         follow_redirects=False,
+        validate_cert=False,
     )
     http_client = tornado.httpclient.AsyncHTTPClient(io_loop=io_loop)
     try:

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="hacheck",
-    version="0.9.0",
+    version="0.10.0",
     author="James Brown",
     author_email="jbrown@uber.com",
     url="https://github.com/uber/hacheck",
@@ -34,7 +34,6 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Intended Audience :: Developers",
