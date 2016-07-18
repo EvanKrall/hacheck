@@ -1,3 +1,9 @@
+hacheck (0.10.0-yelp1) lucid; urgency=low
+
+  * Add https support
+
+ -- Matthew Bentley <bentley@yelp.com>  Mon, 18 Jul 2016 15:08:59 -0700
+
 hacheck (0.9.0-yelp6) lucid; urgency=low
 
   * Bump yelp-hacheck version.
