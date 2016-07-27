@@ -25,7 +25,7 @@ This version has several features not present in the upstream version:
 
 * By setting the `allow_remote_spool_changes` flag in the config file, it becomes possible to POST changes to spool
   status remotely.
-  This is useful if there is some software, like [Paasta](github.com/Yelp/paasta) making decisions centrally about when
+  This is useful if there is some software, like [Paasta](github.com/Yelp/paasta), making decisions centrally about when
   to kill tasks.
 * If the client sends the header `X-Haproxy-Server-State`, then we use the port specified in that header and ignore the
   port in the URL.
